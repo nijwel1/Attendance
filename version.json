@@ -1,18 +1,4 @@
 {
-    "name": "hrm/attendance-addon",
-    "description": "A attendance addon for hrm",
-    "version": "1.0.1",
-    "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Addons\\Attendance\\": ""
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Addons\\Attendance\\AttendanceServiceProvider"
-            ]
-        }
-    }
+  "name": "hrm/attendance-addon",
+  "version": "1.0.1"
 }
