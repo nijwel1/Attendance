@@ -12,13 +12,13 @@ class AttendanceAddonUpdateController extends Controller {
 
     public function downloadAndUpdate() {
         // Get current version from version.json
-        $versionPath = base_path( 'Addons/Employee/version.json' );
+        $versionPath = base_path( 'Addons/Attendance/version.json' );
 
         // Safely read the current version
         $currentVersion = json_decode( File::get( $versionPath ), true )['version'] ?? '0.0.0';
-        $token          = env( 'GITHUB_TOKEN' ); // Use an environment variable for the token
+        $token          = env( 'GITHUB_TOKEN_NIJWEL1' ); // Use an environment variable for the token
         $client         = new Client();
-        $response       = $client->get( 'https://api.github.com/repos/nijwel/Attendance/releases/latest', [
+        $response       = $client->get( 'https://api.github.com/repos/nijwel1/Attendance/releases/latest', [
             'headers' => [
                 'Authorization' => "Bearer {$token}",
                 'Accept'        => 'application/vnd.github.v3+json',
@@ -46,7 +46,12 @@ class AttendanceAddonUpdateController extends Controller {
 
                 if ( $zipResponse->getStatusCode() === 200 ) {
                     $zipFileName = "{$data['name']}.zip"; // or use $data['tag_name'] for versioned name
-                    $filePath    = public_path( $zipFileName );
+                    $filePath    = public_path( 'app/temp/' . $zipFileName );
+                    $directory   = dirname( $filePath );
+
+                    if ( !is_dir( $directory ) ) {
+                        mkdir( $directory, 0755, true );
+                    }
 
                     // Save the ZIP file to the public directory
                     file_put_contents( $filePath, $zipResponse->getBody() );
@@ -65,8 +70,11 @@ class AttendanceAddonUpdateController extends Controller {
                         // Clean up the temporary directory
                         $this->deleteDirectory( $extractPath );
 
+                        if ( File::exists( $filePath ) ) {
+                            File::delete( $filePath );
+                        }
+
                         $this->runAddonMigrations();
-                        Artisan::call( 'config:cache' );
 
                         return back()->with( 'success', 'Attendance Addon updated successfully.' );
                     } else {
