@@ -3,6 +3,7 @@
 namespace Addons\Attendance;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AttendanceServiceProvider extends ServiceProvider {
@@ -14,7 +15,7 @@ class AttendanceServiceProvider extends ServiceProvider {
             ->value( 'enabled' );
 
         if ( $enabled ) {
-            $this->loadViewsFrom( __DIR__ . '/Views/admin/attendance', 'Attendance' );
+            $this->loadViewsFrom( __DIR__ . '/resources/Views/admin/attendance', 'Attendance' );
             $this->loadMigrationsFrom( __DIR__ . '/Migrations' );
             $this->loadRoutesFrom( __DIR__ . '/routes/admin.php' );
 
@@ -25,6 +26,12 @@ class AttendanceServiceProvider extends ServiceProvider {
 
     public function register() {
         $this->app->make( 'Addons\Attendance\Controllers\Admin\EmployeeAttendanceController' );
+        $this->app->make( 'Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController' );
+    }
+
+    protected function loadRoutesWithMiddleware() {
+        Route::middleware( 'auth' ) // Specify your middleware here
+            ->group( __DIR__ . '/routes/admin.php' );
     }
 
     public function loadHelpers() {

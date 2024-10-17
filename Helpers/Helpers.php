@@ -14,8 +14,9 @@ if ( !function_exists( 'employee_addon' ) ) {
     }
 }
 
-if ( !function_exists( 'addonVersion' ) ) {
-    function addonVersion() {
+if ( !function_exists( 'attendanceAddonVersion' ) ) {
+    function attendanceAddonVersion() {
+
         // Get current version from version.json
         $versionPath = base_path( 'Addons/Attendance/version.json' );
 
@@ -23,12 +24,15 @@ if ( !function_exists( 'addonVersion' ) ) {
         $currentVersion = json_decode( File::get( $versionPath ), true )['version'] ?? '0.0.0';
 
         // Prepare to check GitHub for the latest release version
-        $token  = env( 'GITHUB_TOKEN' ); // Use an environment variable for the token
+        $token  = env( 'GITHUB_TOKEN_NIJWEL1' ); // Use an environment variable for the token
         $client = new Client();
 
         try {
-            $response = $client->get( 'https://api.github.com/repos/git-futurein/HRM-Emplyee-Addon/releases/latest', [
-                'verify' => false,
+            $response = $client->get( 'https://api.github.com/repos/nijwel1/Attendance/releases/latest', [
+                'headers' => [
+                    'Authorization' => "Bearer {$token}",
+                    'Accept'        => 'application/vnd.github.v3+json',
+                ],
             ] );
 
             // dd( json_decode( $response->getBody(), true ) );

@@ -4,6 +4,10 @@ use Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController;
 use Addons\Attendance\Controllers\Admin\EmployeeAttendanceController;
 use Illuminate\Support\Facades\Route;
 
+Route::get( '/test-auth', function () {
+    return auth()->check() ? 'Authenticated' : 'Not Authenticated';
+} );
+
 Route::middleware( ['web'] )->group( function () {
 
     Route::prefix( 'admin' )->group( function () {
@@ -19,7 +23,7 @@ Route::middleware( ['web'] )->group( function () {
         } );
 
         //----Addons Route
-        Route::get( '/addon/update', [AttendanceAddonUpdateController::class, 'downloadAndUpdate'] )->name( 'attendance.addon.update' );
+        Route::get( 'attendance/addon/update', [AttendanceAddonUpdateController::class, 'downloadAndUpdate'] )->name( 'attendance.addon.update' );
 
     } );
 

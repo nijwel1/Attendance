@@ -6,20 +6,23 @@ use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use ZipArchive;
 
 class AttendanceAddonUpdateController extends Controller {
 
     public function downloadAndUpdate() {
         // Get current version from version.json
-        $versionPath = base_path( 'Addons/Attendance/version.json' );
+        $versionPath = base_path( 'Addons/Employee/version.json' );
 
         // Safely read the current version
         $currentVersion = json_decode( File::get( $versionPath ), true )['version'] ?? '0.0.0';
+        $token          = env( 'GITHUB_TOKEN' ); // Use an environment variable for the token
         $client         = new Client();
-        $response       = $client->get( 'https://api.github.com/repos/git-futurein/HRM-Emplyee-Addon/releases/latest', [
-            'verify' => false,
+        $response       = $client->get( 'https://api.github.com/repos/nijwel/Attendance/releases/latest', [
+            'headers' => [
+                'Authorization' => "Bearer {$token}",
+                'Accept'        => 'application/vnd.github.v3+json',
+            ],
         ] );
 
         // Check if the response is successful
@@ -34,16 +37,19 @@ class AttendanceAddonUpdateController extends Controller {
             // Compare versions and update if needed
             if ( version_compare( $latestVersion, $currentVersion, '>' ) ) {
                 // Make a request to download the ZIP file
-                $zipResponse = Http::withHeaders( ['git-futurein' => 'HRM-Emplyee-Addon'] )
-                    ->get( $zipballUrl, ['access_token' => env( 'GITHUB_TOKEN' )] );
+                $zipResponse = $client->get( $zipballUrl, [
+                    'headers' => [
+                        'Authorization' => "Bearer {$token}",
+                        // Removed Accept header
+                    ],
+                ] );
 
-                if ( $latestVersion ) {
-                    $zipContent  = $zipResponse->body();
+                if ( $zipResponse->getStatusCode() === 200 ) {
                     $zipFileName = "{$data['name']}.zip"; // or use $data['tag_name'] for versioned name
                     $filePath    = public_path( $zipFileName );
 
                     // Save the ZIP file to the public directory
-                    file_put_contents( $filePath, $zipContent );
+                    file_put_contents( $filePath, $zipResponse->getBody() );
 
                     $zip = new ZipArchive;
 
@@ -62,7 +68,7 @@ class AttendanceAddonUpdateController extends Controller {
                         $this->runAddonMigrations();
                         Artisan::call( 'config:cache' );
 
-                        return back()->with( 'success', 'Files imported successfully.' );
+                        return back()->with( 'success', 'Attendance Addon updated successfully.' );
                     } else {
                         return back()->with( 'error', 'Failed to open zip file.' );
                     }
@@ -146,23 +152,24 @@ class AttendanceAddonUpdateController extends Controller {
 
     private function deleteDirectory( $dir ) {
         if ( !file_exists( $dir ) ) {
-            return true;
+            return true; // Directory does not exist, nothing to do
         }
 
         if ( !is_dir( $dir ) ) {
-            return unlink( $dir );
+            return unlink( $dir ); // It's a file, so delete it
         }
 
+        // Scan the directory for files and directories
         foreach ( scandir( $dir ) as $item ) {
             if ( $item == '.' || $item == '..' ) {
-                continue;
+                continue; // Skip the special entries
             }
 
-            if ( !$this->deleteDirectory( $dir . DIRECTORY_SEPARATOR . $item ) ) {
-                return false;
-            }
+            // Recursively delete the contents
+            $this->deleteDirectory( $dir . DIRECTORY_SEPARATOR . $item );
         }
 
+        // Finally, remove the now-empty directory
         return rmdir( $dir );
     }
 

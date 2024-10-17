@@ -3,7 +3,10 @@
 namespace Addons\Attendance\Controllers\Admin;
 
 use Addons\Attendance\Models\EmployeeAttendance;
+use Addons\Employee\Models\Department;
+use Addons\Employee\Models\Employee;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,96 +17,90 @@ class EmployeeAttendanceController extends Controller {
      */
     public function index( Request $request ) {
 
-        $client   = new \GuzzleHttp\Client();
-        $response = $client->request( 'GET', 'https://api.github.com/repos/nijwel/crud-generator/tags' );
-        $response = json_decode( $response->getBody()->getContents() );
+        try {
+            DB::beginTransaction();
 
-        dd( $response );
+            $startDate = $request->input( 'start_date' );
+            $endDate   = $request->input( 'end_date' );
 
-        // try {
-        //     DB::beginTransaction();
+            $departments      = Department::with( 'employees' )->get();
+            $attendancesQuery = EmployeeAttendance::whereBetween( 'date', [$startDate, $endDate] );
 
-        //     $startDate = $request->input( 'start_date' );
-        //     $endDate   = $request->input( 'end_date' );
+            $employeeId = $request->input( 'employee_id' );
 
-        //     $departments      = Department::with( 'employees' )->get();
-        //     $attendancesQuery = EmployeeAttendance::whereBetween( 'date', [$startDate, $endDate] );
+            if ( $employeeId ) {
+                $employeeId = $request->input( 'employee_id' );
 
-        //     $employeeId = $request->input( 'employee_id' );
+                // Parse the start and end dates
+                $startDate = Carbon::parse( $startDate );
+                $endDate   = Carbon::parse( $endDate );
 
-        //     if ( $employeeId ) {
-        //         $employeeId = $request->input( 'employee_id' );
+                // Calculate the number of days between the start and end dates
+                $daysInRange = $startDate->diffInDays( $endDate ) + 1;
 
-        //         // Parse the start and end dates
-        //         $startDate = Carbon::parse( $startDate );
-        //         $endDate   = Carbon::parse( $endDate );
+                // Create an array of all dates between the start and end dates
+                $dates = collect( range( 0, $daysInRange - 1 ) )->map( function ( $day ) use ( $startDate ) {
+                    return $startDate->copy()->addDays( $day )->format( 'Y/m/d' );
+                } );
 
-        //         // Calculate the number of days between the start and end dates
-        //         $daysInRange = $startDate->diffInDays( $endDate ) + 1;
+                // Fetch attendance data for the employee for the specified date range
+                $attendances = $attendancesQuery->where( 'employee_id', $employeeId )
+                    ->whereBetween( 'date', [format_date_only( $startDate->startOfDay() ), format_date_only( $endDate->endOfDay() )] )
+                    ->get()
+                    ->keyBy( 'date' ); // Key by date for easy lookup
 
-        //         // Create an array of all dates between the start and end dates
-        //         $dates = collect( range( 0, $daysInRange - 1 ) )->map( function ( $day ) use ( $startDate ) {
-        //             return $startDate->copy()->addDays( $day )->format( 'Y/m/d' );
-        //         } );
+                // Prepare attendance data for the view
+                $attendanceData = $dates->map( function ( $date ) use ( $attendances ) {
+                    $attendance = $attendances->get( $date );
+                    $employee   = Employee::select( 'id', 'name' )->find( request()->input( 'employee_id' ) );
 
-        //         // Fetch attendance data for the employee for the specified date range
-        //         $attendances = $attendancesQuery->where( 'employee_id', $employeeId )
-        //             ->whereBetween( 'date', [format_date_only( $startDate->startOfDay() ), format_date_only( $endDate->endOfDay() )] )
-        //             ->get()
-        //             ->keyBy( 'date' ); // Key by date for easy lookup
+                    return [
+                        'date'             => $date,
+                        'status'           => $attendance ? $attendance->status : null,
+                        'remarks'          => $attendance ? $attendance->remarks : null,
+                        'employee_id'      => $attendance ? $attendance->employee_id : null,
+                        'employee_name'    => $attendance && $attendance->employee ? $attendance->employee->name : $employee->name,
+                        'day'              => dayName( $date ),
+                        'in_time'          => $attendance ? $attendance->in_time : null,
+                        'out_time'         => $attendance ? $attendance->out_time : null,
+                        'break_start_time' => $attendance ? $attendance->break_start_time : null,
+                        'break_end_time'   => $attendance ? $attendance->break_end_time : null,
+                        'working_hours'    => $attendance ? $attendance->working_hours : null,
+                        'normal_hours'     => $attendance ? $attendance->normal_hours : null,
+                        'overtime_hours'   => $attendance ? $attendance->overtime_hours : null,
+                        'break_hours'      => $attendance ? $attendance->break_hours : null,
+                    ];
+                } );
 
-        //         // Prepare attendance data for the view
-        //         $attendanceData = $dates->map( function ( $date ) use ( $attendances ) {
-        //             $attendance = $attendances->get( $date );
-        //             $employee   = Employee::select( 'id', 'name' )->find( request()->input( 'employee_id' ) );
+                // Commit DB transaction (if needed)
+                DB::commit();
 
-        //             return [
-        //                 'date'             => $date,
-        //                 'status'           => $attendance ? $attendance->status : null,
-        //                 'remarks'          => $attendance ? $attendance->remarks : null,
-        //                 'employee_id'      => $attendance ? $attendance->employee_id : null,
-        //                 'employee_name'    => $attendance && $attendance->employee ? $attendance->employee->name : $employee->name,
-        //                 'day'              => dayName( $date ),
-        //                 'in_time'          => $attendance ? $attendance->in_time : null,
-        //                 'out_time'         => $attendance ? $attendance->out_time : null,
-        //                 'break_start_time' => $attendance ? $attendance->break_start_time : null,
-        //                 'break_end_time'   => $attendance ? $attendance->break_end_time : null,
-        //                 'working_hours'    => $attendance ? $attendance->working_hours : null,
-        //                 'normal_hours'     => $attendance ? $attendance->normal_hours : null,
-        //                 'overtime_hours'   => $attendance ? $attendance->overtime_hours : null,
-        //                 'break_hours'      => $attendance ? $attendance->break_hours : null,
-        //             ];
-        //         } );
+                // Return the view with departments and attendance data
 
-        //         // Commit DB transaction (if needed)
-        //         DB::commit();
+                $view = 'Attendance::individual';
+                if ( !view()->exists( $view ) ) {
+                    return view( 'errors.404' );
+                } else {
+                    return view( 'Attendance::individual', compact( 'departments', 'attendanceData', 'employeeId', 'startDate', 'endDate' ) );
+                }
+            }
 
-        //         // Return the view with departments and attendance data
+            $attendances = $attendancesQuery->get();
 
-        //         $view = 'Attendance::individual';
-        //         if ( !view()->exists( $view ) ) {
-        //             return view( 'errors.404' );
-        //         } else {
-        //             return view( 'Attendance::individual', compact( 'departments', 'attendanceData', 'employeeId', 'startDate', 'endDate' ) );
-        //         }
-        //     }
+            DB::commit();
 
-        //     $attendances = $attendancesQuery->get();
+            $view = 'Attendance::index';
+            if ( !view()->exists( $view ) ) {
+                return view( 'errors.404' );
+            } else {
+                return view( 'Attendance::index', compact( 'departments', 'attendances', 'employeeId' ) );
+            }
 
-        //     DB::commit();
-
-        //     $view = 'Attendance::index';
-        //     if ( !view()->exists( $view ) ) {
-        //         return view( 'errors.404' );
-        //     } else {
-        //         return view( 'Attendance::index', compact( 'departments', 'attendances', 'employeeId' ) );
-        //     }
-
-        // } catch ( \Exception $e ) {
-        //     DB::rollBack();
-        //     Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
-        //     return redirect()->back()->with( 'error', 'Oh! Something went wrong!' );
-        // }
+        } catch ( \Exception $e ) {
+            DB::rollBack();
+            Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
+            return redirect()->back()->with( 'error', 'Oh! Something went wrong!' );
+        }
     }
 
     /**
