@@ -16,12 +16,11 @@ class EmployeeAttendanceController extends Controller {
      * Display a listing of the resource.
      */
     public function index( Request $request ) {
-
         try {
             DB::beginTransaction();
 
-            $startDate = $request->input( 'start_date' );
-            $endDate   = $request->input( 'end_date' );
+            $startDate = $request->input( 'start_date' ) ?? startDateOfMonth();
+            $endDate   = $request->input( 'end_date' ) ?? endDateOfMonth();
 
             $departments      = Department::with( 'employees' )->get();
             $attendancesQuery = EmployeeAttendance::whereBetween( 'date', [$startDate, $endDate] );
@@ -29,6 +28,7 @@ class EmployeeAttendanceController extends Controller {
             $employeeId = $request->input( 'employee_id' );
 
             if ( $employeeId ) {
+
                 $employeeId = $request->input( 'employee_id' );
 
                 // Parse the start and end dates
@@ -104,31 +104,26 @@ class EmployeeAttendanceController extends Controller {
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        try {
-
-            DB::beginTransaction();
-
-            // Your logic here
-
-            DB::commit();
-
-        } catch ( \Exception $e ) {
-            DB::rollBack();
-            Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
-            return redirect()->back()->with( 'error', 'Oh ! Something went wrong !' );
-        }
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store( Request $request ) {
-        try {
 
+        $request->validate( [
+            'employee_id'      => 'required',
+            'date'             => 'required|date',
+            'in_time'          => 'required|date_format:h:ia',
+            'out_time'         => 'nullable|after:in_time',
+            'break_start_time' => 'nullable|after:in_time|before:break_end_time',
+            'break_end_time'   => 'nullable|after:break_start_time',
+            'remarks'          => 'nullable|string',
+        ] );
+        try {
             DB::beginTransaction();
+
+            $data = EmployeeAttendance::where( 'employee_id', $request->employee_id )->where( 'date', format_date_only( $request->date ) )->first();
+            if ( $data ) {
+                return redirect()->back()->with( 'error', 'Employee Attendance already exists for ' . format_date( $request->date ) . '' );
+            }
             $data                   = new EmployeeAttendance();
             $data->employee_id      = $request->employee_id;
             $data->date             = format_date_only( $request->date );
@@ -182,7 +177,15 @@ class EmployeeAttendanceController extends Controller {
 
             DB::beginTransaction();
 
-            // Your logic here
+            $data        = EmployeeAttendance::find( $id );
+            $departments = Department::with( 'employees' )->get();
+
+            $view = 'Attendance::edit';
+            if ( !view()->exists( $view ) ) {
+                return view( 'errors.404' );
+            } else {
+                return view( 'Attendance::edit', compact( 'departments', 'data' ) );
+            }
 
             DB::commit();
 
@@ -197,37 +200,54 @@ class EmployeeAttendanceController extends Controller {
      * Update the specified resource in storage.
      */
     public function update( Request $request, string $id ) {
-        try {
 
-            DB::beginTransaction();
+        $request->validate( [
+            'employee_id'      => 'required',
+            'date'             => 'required|date',
+            'in_time'          => 'required|date_format:h:ia',
+            'out_time'         => 'required|after:in_time',
+            'break_start_time' => 'nullable|after:in_time|before:break_end_time',
+            'break_end_time'   => 'nullable|after:break_start_time',
+            'remarks'          => 'nullable|string',
+        ] );
+        // try {
 
-            // Your logic here
+        DB::beginTransaction();
 
-            DB::commit();
+        $data                   = EmployeeAttendance::find( $id );
+        $data->employee_id      = $request->employee_id;
+        $data->date             = format_date_only( $request->date );
+        $data->day              = dayName( $request->date );
+        $data->in_time          = $request->in_time;
+        $data->out_time         = $request->out_time;
+        $data->break_start_time = $request->break_start_time;
+        $data->break_end_time   = $request->break_end_time;
+        $data->working_hours    = workingHours( $request->in_time, $request->out_time, $request->break_start_time, $request->break_end_time );
+        $data->normal_hours     = normalHours( $request->in_time, $request->out_time );
+        $data->overtime_hours   = overTime( $request->in_time, $request->out_time );
+        $data->break_hours      = breakHours( $request->break_start_time, $request->break_end_time );
+        $data->status           = $request->in_time ? 'present' : 'absent';
+        $data->auth_id          = auth()->user()->id;
+        $data->remarks          = $request->remarks;
+        $data->save();
 
-        } catch ( \Exception $e ) {
-            DB::rollBack();
-            Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
-            return redirect()->back()->with( 'error', 'Oh ! Something went wrong !' );
-        }
+        DB::commit();
+        return redirect()->back()->with( 'success', 'Employee Attendance updated successfully.' );
+        // } catch ( \Exception $e ) {
+        //     DB::rollBack();
+        //     Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
+        //     return redirect()->back()->with( 'error', 'Oh ! Something went wrong !' );
+        // }
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy( string $id ) {
-        try {
 
-            DB::beginTransaction();
+        $data = EmployeeAttendance::find( $id );
+        $data->delete();
+        return redirect()->back()->with( 'success', 'Employee Attendance deleted successfully.' );
 
-            // Your logic here
-
-            DB::commit();
-
-        } catch ( \Exception $e ) {
-            DB::rollBack();
-            Log::error( 'Failed to update user details', ['error' => $e->getMessage()] );
-            return redirect()->back()->with( 'error', 'Oh ! Something went wrong !' );
-        }
     }
 }

@@ -70,10 +70,10 @@
                                     <div id="reportrange" class="custome-date-range form-control form-control-sm">
                                         <i class="fa fa-calendar-alt"></i>&nbsp;
                                         <span></span> <i class="fa fa-caret-down"></i>
-                                        <input type="text" name="start_date"
+                                        <input type="hidden" name="start_date"
                                             value="{{ request()->get('start_date', startDateOfMonth()) }}" id="start_date">
-                                        <input type="text" name="end_date"
-                                            value="{{ request()->get('end_date', startDateOfMonth()) }}" id="end_date">
+                                        <input type="hidden" name="end_date"
+                                            value="{{ request()->get('end_date', endDateOfMonth()) }}" id="end_date">
                                     </div>
                                 </div>
                             </div>
@@ -154,17 +154,22 @@
                                                 {{ $attendance['break_start_time'] ? $attendance['overtime_hours'] : '-' }}
                                             </td>
                                             <td width="10%">
-                                                @if ($attendance['status'] == 'present')
-                                                    <span class="badge rounded-pill text-bg-success">
-                                                        Present
-                                                        <span>
-                                                            @if ($attendance['in_time'] > '10:00am')
-                                                                <span class="badge rounded-pill text-bg-warning">Late</span>
-                                                            @endif
+                                                @if ($attendance['date'] <= format_date_only(today()))
+                                                    @if ($attendance['status'] == 'present')
+                                                        <span class="badge rounded-pill text-bg-success">
+                                                            Present
+                                                            <span>
+                                                                @if ($attendance['in_time'] > '10:00am')
+                                                                    <span
+                                                                        class="badge rounded-pill text-bg-warning">Late</span>
+                                                                @endif
+                                                            </span>
                                                         </span>
-                                                    </span>
+                                                    @else
+                                                        <span class="badge rounded-pill text-bg-danger">Absent</span>
+                                                    @endif
                                                 @else
-                                                    <span class="badge rounded-pill text-bg-danger">Absent</span>
+                                                    <span class="badge rounded-pill text-bg-light">-</span>
                                                 @endif
                                             </td>
                                             <td width="10%">
@@ -320,7 +325,7 @@
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
-                $.get("{{ url('admin/department/edit') }}/" + id,
+                $.get("{{ url('admin/employee-attendance/edit') }}/" + id,
                     function(data) {
                         $('#edit_section').html(data);
                     })

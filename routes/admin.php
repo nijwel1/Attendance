@@ -4,11 +4,11 @@ use Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController;
 use Addons\Attendance\Controllers\Admin\EmployeeAttendanceController;
 use Illuminate\Support\Facades\Route;
 
-Route::get( '/test-auth', function () {
+Route::get( '/auth-check', function () {
     return auth()->check() ? 'Authenticated' : 'Not Authenticated';
 } );
 
-Route::middleware( ['web'] )->group( function () {
+Route::middleware( ['web', 'auth'] )->group( function () {
 
     Route::prefix( 'admin' )->group( function () {
 
@@ -19,7 +19,7 @@ Route::middleware( ['web'] )->group( function () {
             Route::post( '/store', [EmployeeAttendanceController::class, 'store'] )->name( 'attendance.store' );
             Route::get( '/edit/{id}', [EmployeeAttendanceController::class, 'edit'] )->name( 'attendance.edit' );
             Route::post( '/update/{id}', [EmployeeAttendanceController::class, 'update'] )->name( 'attendance.update' );
-            Route::delete( '/delete/{id}', [EmployeeAttendanceController::class, 'destroy'] )->name( 'attendance.deletre' );
+            Route::delete( '/delete/{id}', [EmployeeAttendanceController::class, 'destroy'] )->name( 'attendance.delete' );
         } );
 
         //----Addons Route

@@ -19,6 +19,7 @@ class AttendanceServiceProvider extends ServiceProvider {
         if ( $enabled ) {
             $this->loadViewsFrom( __DIR__ . '/resources/Views/admin/attendance', 'Attendance' );
             $this->loadMigrationsFrom( __DIR__ . '/Migrations' );
+
             $this->loadRoutesFrom( __DIR__ . '/routes/admin.php' );
 
             $this->loadHelpers();
@@ -37,5 +38,21 @@ class AttendanceServiceProvider extends ServiceProvider {
         if ( file_exists( $helpers ) ) {
             require_once $helpers;
         }
+    }
+
+    public function getSidebarItems() {
+        $enabled = config( 'attendance.enabled' );
+        if ( $enabled ) {
+            return [
+                "Attendance" => [
+                    ['name' => 'Attendance', 'url' => route( 'attendance.index' )],
+                    // Add more attendance-related items here
+                ],
+            ];
+        }
+    }
+
+    public function getOrder() {
+        return 1; // Define the order for this provider
     }
 }

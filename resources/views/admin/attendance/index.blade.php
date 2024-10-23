@@ -70,6 +70,10 @@
                                     <div id="reportrange" class="custome-date-range form-control form-control-sm">
                                         <i class="fa fa-calendar-alt"></i>&nbsp;
                                         <span></span> <i class="fa fa-caret-down"></i>
+                                        <input type="hidden" name="start_date"
+                                            value="{{ request()->get('start_date', startDateOfMonth()) }}" id="start_date">
+                                        <input type="hidden" name="end_date"
+                                            value="{{ request()->get('end_date', endDateOfMonth()) }}" id="end_date">
                                     </div>
                                 </div>
                                 {{-- <div class=" mb-3 col-lg-1">
@@ -174,11 +178,11 @@
                                             <td width="10%">
                                                 <div class="d-flex gap-1">
                                                     <button class="btn btn-outline-base btn-sm edit"
-                                                        data-id="{{ $department->id }}" data-bs-toggle="modal"
+                                                        data-id="{{ $attendance->id }}" data-bs-toggle="modal"
                                                         data-bs-target="#editModal">
                                                         <i class="far fa-edit"></i>
                                                     </button>
-                                                    <form action="{{ route('department.destroy', $department->id) }}"
+                                                    <form action="{{ route('attendance.delete', $attendance->id) }}"
                                                         method="POST">
                                                         @csrf
                                                         @method('DELETE')
@@ -240,8 +244,8 @@
                                 <label class="mb-2 form--label text--white">Date</label>
                                 <span class="text-danger">*</span>
                                 <div>
-                                    <input type="text" name="date" id="date" class="form-control form-control-sm"
-                                        required />
+                                    <input type="text" name="date" id="date"
+                                        class="form-control form-control-sm" required />
                                 </div>
                             </div>
 
@@ -297,6 +301,24 @@
             </div>
         </div>
         <!-- / Modal -->
+
+        <!--New Attendance Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">
+                            Attendance
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="edit_section">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- / Modal -->
     </div>
 
     @push('js')
@@ -307,7 +329,7 @@
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
-                $.get("{{ url('admin/department/edit') }}/" + id,
+                $.get("{{ url('admin/employee-attendance/edit') }}/" + id,
                     function(data) {
                         $('#edit_section').html(data);
                     })
@@ -385,17 +407,14 @@
 
         <script>
             $(function() {
-                $('input[name="date"]').daterangepicker({
+                $('#date').daterangepicker({
                     singleDatePicker: true,
                     showDropdowns: true,
                     minYear: 1901,
                     maxYear: parseInt(moment().format('YYYY'), 10),
                     locale: {
-                        format: 'DD/MM/YYYY' // Change this to your desired format
+                        format: 'YYYY-MM-DD' // Change this to your desired format
                     }
-                }, function(start, end, label) {
-                    var years = moment().diff(start, 'years');
-                    alert("You are " + years + " years old!");
                 });
             });
         </script>
