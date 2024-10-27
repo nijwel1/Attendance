@@ -6,6 +6,7 @@ use Addons\Attendance\Models\EmployeeAttendance;
 use Addons\Employee\Models\Department;
 use Addons\Employee\Models\Employee;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class EmployeeAttendanceController extends Controller {
 
                 // Create an array of all dates between the start and end dates
                 $dates = collect( range( 0, $daysInRange - 1 ) )->map( function ( $day ) use ( $startDate ) {
-                    return $startDate->copy()->addDays( $day )->format( 'Y/m/d' );
+                    return $startDate->copy()->addDays( $day )->format( 'Y-m-d' );
                 } );
 
                 // Fetch attendance data for the employee for the specified date range
@@ -52,13 +53,15 @@ class EmployeeAttendanceController extends Controller {
                 // Prepare attendance data for the view
                 $attendanceData = $dates->map( function ( $date ) use ( $attendances ) {
                     $attendance = $attendances->get( $date );
-                    $employee   = Employee::select( 'id', 'name' )->find( request()->input( 'employee_id' ) );
+
+                    $employee = Employee::select( 'id', 'name' )->find( request()->input( 'employee_id' ) );
 
                     return [
+                        'id'               => $attendance ? $attendance->id : null,
                         'date'             => $date,
                         'status'           => $attendance ? $attendance->status : null,
                         'remarks'          => $attendance ? $attendance->remarks : null,
-                        'employee_id'      => $attendance ? $attendance->employee_id : null,
+                        'employee_id'      => $employee ? $employee->id : null,
                         'employee_name'    => $attendance && $attendance->employee ? $attendance->employee->name : $employee->name,
                         'day'              => dayName( $date ),
                         'in_time'          => $attendance ? $attendance->in_time : null,
@@ -111,7 +114,7 @@ class EmployeeAttendanceController extends Controller {
         $request->validate( [
             'employee_id'      => 'required',
             'date'             => 'required|date',
-            'in_time'          => 'required|date_format:h:ia',
+            'in_time'          => 'required',
             'out_time'         => 'nullable|after:in_time',
             'break_start_time' => 'nullable|after:in_time|before:break_end_time',
             'break_end_time'   => 'nullable|after:break_start_time',
@@ -204,7 +207,7 @@ class EmployeeAttendanceController extends Controller {
         $request->validate( [
             'employee_id'      => 'required',
             'date'             => 'required|date',
-            'in_time'          => 'required|date_format:h:ia',
+            'in_time'          => 'required',
             'out_time'         => 'required|after:in_time',
             'break_start_time' => 'nullable|after:in_time|before:break_end_time',
             'break_end_time'   => 'nullable|after:break_start_time',

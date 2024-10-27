@@ -2,6 +2,7 @@
 
 use Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController;
 use Addons\Attendance\Controllers\Admin\EmployeeAttendanceController;
+use Addons\Attendance\Controllers\Admin\LeaveApplicationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get( '/auth-check', function () {
@@ -20,6 +21,17 @@ Route::middleware( ['web', 'auth'] )->group( function () {
             Route::get( '/edit/{id}', [EmployeeAttendanceController::class, 'edit'] )->name( 'attendance.edit' );
             Route::post( '/update/{id}', [EmployeeAttendanceController::class, 'update'] )->name( 'attendance.update' );
             Route::delete( '/delete/{id}', [EmployeeAttendanceController::class, 'destroy'] )->name( 'attendance.delete' );
+        } );
+
+        // ------ Leave Application -----
+
+        Route::prefix( 'leave-application' )->group( function () {
+            Route::get( '/', [LeaveApplicationController::class, 'index'] )->name( 'leave_application.index' );
+            Route::get( 'create', [LeaveApplicationController::class, 'create'] )->name( 'leave_application.create' );
+            Route::post( 'store', [LeaveApplicationController::class, 'store'] )->name( 'leave_application.store' );
+            Route::get( 'edit/{id}', [LeaveApplicationController::class, 'edit'] )->name( 'leave_application.edit' );
+            Route::post( 'update/{id}', [LeaveApplicationController::class, 'update'] )->name( 'leave_application.update' );
+            Route::delete( 'delete/{id}', [LeaveApplicationController::class, 'destroy'] )->name( 'leave_application.delete' );
         } );
 
         //----Addons Route

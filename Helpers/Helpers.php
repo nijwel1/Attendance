@@ -14,6 +14,34 @@ if ( !function_exists( 'employee_addon' ) ) {
     }
 }
 
+if ( !function_exists( 'yearsBefore' ) ) {
+    function yearsBefore( $n ) {
+        $currentYear = date( "Y" );
+        $years       = [];
+
+        // Years before the current year
+        for ( $i = 0; $i < $n; $i++ ) {
+            $years[] = $currentYear - $i;
+        }
+        return $years;
+    }
+
+}
+
+if ( !function_exists( 'yearsAfter' ) ) {
+    function yearsAfter( $n ) {
+        $currentYear = date( "Y" );
+        $years       = [];
+
+        // Years before the current year
+        for ( $i = 0; $i < $n; $i++ ) {
+            $years[] = $currentYear + $i;
+        }
+        return $years;
+    }
+
+}
+
 if ( !function_exists( 'attendanceAddonVersion' ) ) {
     function attendanceAddonVersion() {
 

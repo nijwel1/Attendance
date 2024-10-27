@@ -3,31 +3,6 @@
 @section('header', 'Attendance')
 @section('content')
     @push('css')
-        <style>
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                line-height: 32px !important;
-                color: var(--black) !important;
-            }
-
-            .select2-container--default .select2-selection--single {
-                min-height: 35px;
-            }
-
-            .select2-container .select2-selection--single {
-                height: 35px;
-                font-size: 14px;
-                font-weight: 400;
-                color: var(--black) !important;
-            }
-
-            .select2-container--default .select2-selection--single .select2-selection__arrow {
-                height: 20px;
-                position: absolute;
-                top: 7px;
-                right: 7px;
-                width: 20px;
-            }
-        </style>
     @endpush
     <div class="dd-content">
         <!-- Breadcrumb Start Here -->
@@ -51,8 +26,8 @@
                             <div class="row">
                                 <div class=" mb-3 col-lg-4">
                                     <div class="form-group">
-                                        <select class="form-select from-select2 form-control-sm" id="employee_id"
-                                            type="text" name="employee_id">
+                                        <select class="form-select select2 form-control-sm" id="employee_id" type="text"
+                                            name="employee_id">
                                             <option value="">All Employee</option>
                                             @foreach ($departments as $department)
                                                 <optgroup label="{{ $department?->name }}">
@@ -142,16 +117,16 @@
                                                 {{ $attendance['break_start_time'] ? $attendance['break_start_time'] : '-' }}
                                             </td>
                                             <td width="10%">
-                                                {{ $attendance['break_start_time'] ? $attendance['break_end_time'] : '-' }}
+                                                {{ $attendance['break_end_time'] ? $attendance['break_end_time'] : '-' }}
                                             </td>
                                             <td width="10%">
-                                                {{ $attendance['break_start_time'] ? $attendance['working_hours'] : '-' }}
+                                                {{ $attendance['working_hours'] ? formatTime($attendance['working_hours']) : '-' }}
                                             </td>
                                             <td width="10%">
-                                                {{ $attendance['break_start_time'] ? $attendance['normal_hours'] : '-' }}
+                                                {{ $attendance['normal_hours'] ? formatTime($attendance['normal_hours']) : '-' }}
                                             </td>
                                             <td width="10%">
-                                                {{ $attendance['break_start_time'] ? $attendance['overtime_hours'] : '-' }}
+                                                {{ $attendance['overtime_hours'] ? formatTime($attendance['overtime_hours']) : '-' }}
                                             </td>
                                             <td width="10%">
                                                 @if ($attendance['date'] <= format_date_only(today()))
@@ -173,14 +148,15 @@
                                                 @endif
                                             </td>
                                             <td width="10%">
-                                                <div class="d-flex gap-1">
-                                                    @if ($attendance['in_time'])
+                                                @if ($attendance['in_time'])
+                                                    <div class="d-flex gap-1">
+
                                                         <button class="btn btn-outline-base btn-sm edit"
-                                                            data-id="{{ $department->id }}" data-bs-toggle="modal"
+                                                            data-id="{{ $attendance['id'] }}" data-bs-toggle="modal"
                                                             data-bs-target="#editModal">
                                                             <i class="far fa-edit"></i>
                                                         </button>
-                                                        <form action="{{ route('department.destroy', $department->id) }}"
+                                                        <form action="{{ route('department.destroy', $attendance['id']) }}"
                                                             method="POST">
                                                             @csrf
                                                             @method('DELETE')
@@ -189,22 +165,16 @@
                                                                 <i class="far fa-trash-alt"></i>
                                                             </button>
                                                         </form>
-                                                    @else
-                                                        <button class="btn btn-outline-base btn-sm edit" disabled
-                                                            data-id="{{ $department->id }}" data-bs-toggle="modal"
-                                                            data-bs-target="#editModal">
-                                                            <i class="far fa-edit"></i>
-                                                        </button>
-                                                        <form action="javascript:void(0)" method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-outline-danger btn-sm delete" disabled>
-                                                                <i class="far fa-trash-alt"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                </div>
+                                                    </div>
+                                                @else
+                                                    <a href="#" class="add-leave-application"
+                                                        data-id="{{ $attendance['employee_id'] }}"
+                                                        data-date="{{ $attendance['date'] }}" data-bs-toggle="modal"
+                                                        data-bs-target="#leaveApplicationModal">
+                                                        <i class="far fa-plus"></i> Add Leave Application
+                                                    </a>
+                                                @endif
+
                                             </td>
                                         </tr>
                                 </tbody>
@@ -239,7 +209,7 @@
                                 <label class="mb-2 form--label text--white">Employee</label>
                                 <span class="text-danger">*</span>
                                 <div>
-                                    <select class="form-select from-select2 form-control-sm" id="employee"
+                                    <select class="form-select select2 form-control-sm" id="att_employee"
                                         name="employee_id" required style="width: 100%">
                                         @foreach ($departments as $department)
                                             <optgroup label="{{ $department?->name }}">
@@ -315,13 +285,45 @@
             </div>
         </div>
         <!-- / Modal -->
+
+        <!--New Attendance Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">
+                            Attendance
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="edit_section">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- / Modal -->
+
+        <!--New leave Application Modal -->
+        <div class="modal fade" id="leaveApplicationModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xxl modal-dialog-scrollable">
+                <div class="modal-content overflow-visible">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">
+                            Add Leave Application
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body overflow-x-hidden" id="leave_application_section">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- / Modal -->
     </div>
 
     @push('js')
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
@@ -333,30 +335,53 @@
         </script>
 
         <script>
-            // Handle Change Password Modal
-            $(document).on('click', '.changePassword', function() {
-                let employee_id = $(this).data('employee_id');
-
-                // Update the form action with the employee_id for Change Password
-                let passwordFormAction = "{{ route('employee.change.password', ':id') }}";
-                passwordFormAction = passwordFormAction.replace(':id', employee_id);
-                $('#changePasswordModal form').attr('action', passwordFormAction);
+            $('body').on('click', '.add-leave-application', function test() {
+                var id = $(this).data('id');
+                var date = $(this).data('date');
+                $.ajax({
+                    url: "{{ url('admin/leave-application/create') }}",
+                    type: 'GET',
+                    data: {
+                        id: id,
+                        date: date
+                    },
+                    success: function(data) {
+                        $('#leave_application_section').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching leave application:', error);
+                    }
+                });
             });
 
-            // Handle Change Password Modal
-            $(document).on('click', '.changeEmail', function() {
-                let employee_id = $(this).data('employee_id');
-                let oldEmail = $(this).data('email');
+            $('body').on('change', '.employee_id', function() {
+                var id = $(this).val();
+                var date = $("#from_date").val();
 
-                // Populate old email in the modal
-                $('#oldEmail').val(oldEmail);
-
-                // Update the form action with the correct route and employee ID
-                let emailFormAction = "{{ route('employee.change.email', ':id') }}";
-                emailFormAction = emailFormAction.replace(':id', employee_id);
-                $('#changeEmailModal form').attr('action', emailFormAction);
+                // Convert date from MM/DD/YYYY to YYYY/MM/DD
+                var dateParts = date.split('/');
+                if (dateParts.length === 3) {
+                    date = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0]; // YYYY/MM/DD
+                }
+                $.ajax({
+                    url: "{{ url('admin/leave-application/create') }}",
+                    type: 'GET',
+                    data: {
+                        id: id,
+                        date: date
+                    },
+                    success: function(data) {
+                        $('#leave_application_section').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching leave application:', error);
+                    }
+                });
             });
+        </script>
 
+
+        <script>
             $(document).ready(function() {
                 $('#department').on('change', function() {
                     $('#searchForm').submit(); // Submit the form
@@ -397,13 +422,8 @@
                     }
                 }, cb);
 
-                // Call the callback function to set the initial text
                 cb(startDate, endDate);
             });
-
-
-
-
 
             $("#reportrange").on('apply.daterangepicker', function(ev, picker) {
 
@@ -416,9 +436,16 @@
                 $('#searchForm').submit();
 
             });
+        </script>
 
+        <script>
             $(document).ready(function() {
-                $(".from-select2").select2();
+                $("#att_employee").select2({
+                    dropdownParent: $('#attendanceModal'),
+                    tags: true,
+                    tokenSeparators: [','],
+                    width: '100%'
+                });
             });
         </script>
 

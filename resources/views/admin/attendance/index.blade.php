@@ -156,25 +156,27 @@
                                             <td width="10%">
                                                 {{ $attendance->break_end_time ? $attendance->break_end_time : '-' }}</td>
                                             <td width="10%">
-                                                {{ $attendance->working_hours ? $attendance->working_hours : '-' }}</td>
+                                                {{ $attendance->working_hours ? formatTime($attendance->working_hours) : '-' }}
+                                            </td>
                                             <td width="10%">
-                                                {{ $attendance->normal_hours ? $attendance->normal_hours : '-' }}</td>
+                                                {{ $attendance->normal_hours ? formatTime($attendance->normal_hours) : '-' }}
+                                            </td>
                                             <td width="10%">
-                                                {{ $attendance->overtime_hours ? $attendance->overtime_hours : '-' }}</td>
+                                                {{ $attendance->overtime_hours ? formatTime($attendance->overtime_hours) : '-' }}
+                                            </td>
                                             <td width="10%">
                                                 @if ($attendance->status == 'present')
                                                     <span class="badge rounded-pill text-bg-success">
                                                         Present
-                                                        <span>
-                                                            @if ($attendance->in_time > '10:00am')
-                                                                <span class="badge rounded-pill text-bg-warning">Late</span>
-                                                            @endif
-                                                        </span>
+                                                        @if (date('H:i', strtotime($attendance->in_time)) > '10:00')
+                                                            <span class="badge rounded-pill text-bg-warning">Late</span>
+                                                        @endif
                                                     </span>
                                                 @else
                                                     <span class="badge rounded-pill text-bg-danger">Absent</span>
                                                 @endif
                                             </td>
+
                                             <td width="10%">
                                                 <div class="d-flex gap-1">
                                                     <button class="btn btn-outline-base btn-sm edit"
@@ -302,7 +304,7 @@
         </div>
         <!-- / Modal -->
 
-        <!--New Attendance Modal -->
+        <!--Edit Attendance Modal -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-md">
                 <div class="modal-content">
@@ -319,6 +321,7 @@
             </div>
         </div>
         <!-- / Modal -->
+        
     </div>
 
     @push('js')

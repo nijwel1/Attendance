@@ -18,6 +18,7 @@ class AttendanceServiceProvider extends ServiceProvider {
 
         if ( $enabled ) {
             $this->loadViewsFrom( __DIR__ . '/resources/Views/admin/attendance', 'Attendance' );
+            $this->loadViewsFrom( __DIR__ . '/resources/Views/admin/leave_application', 'LeaveApplication' );
             $this->loadMigrationsFrom( __DIR__ . '/Migrations' );
 
             $this->loadRoutesFrom( __DIR__ . '/routes/admin.php' );
@@ -30,6 +31,7 @@ class AttendanceServiceProvider extends ServiceProvider {
     public function register() {
         $this->app->make( 'Addons\Attendance\Controllers\Admin\EmployeeAttendanceController' );
         $this->app->make( 'Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController' );
+        $this->app->make( 'Addons\Attendance\Controllers\Admin\LeaveApplicationController' );
     }
 
     public function loadHelpers() {
@@ -46,7 +48,7 @@ class AttendanceServiceProvider extends ServiceProvider {
             return [
                 "Attendance" => [
                     ['name' => 'Attendance', 'url' => route( 'attendance.index' )],
-                    // Add more attendance-related items here
+                    ['name' => 'Leave Application', 'url' => route( 'leave_application.index' )],
                 ],
             ];
         }
