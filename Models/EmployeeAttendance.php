@@ -12,7 +12,7 @@ class EmployeeAttendance extends Model {
     protected $fillable = [];
 
     public function employee() {
-        return $this->belongsTo( Employee::class );
+        return $this->belongsTo( Employee::class )->with( 'WorkTable' );
     }
 
 }

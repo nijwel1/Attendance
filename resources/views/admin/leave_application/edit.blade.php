@@ -26,31 +26,33 @@
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
                     <input data-language="en" type="text" value="{{ date('m/Y') }}" name="month_to_pay"
-                        id="month-picker" class="form-control form-control-sm" required />
+                        id="month_to_pay" class="form-control form-control-sm month" required readonly />
                 </div>
             </div>
             <div class="form-group mb-3 row">
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">From</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="date_from" id="from_date" value="{{ $leaveApplication->date_from }}"
-                        class="form-control form-control-sm date_picker_from" required />
+                    <input type="text" name="date_from" id="edit_from_date"
+                        value="{{ $leaveApplication->date_from ? datepicker_format($leaveApplication->date_from) : '' }}"
+                        class="form-control form-control-sm datepicker-here" required readonly />
                 </div>
             </div>
             <div class="form-group mb-3 row">
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">To</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="date_to" id="to_date" value="{{ $leaveApplication->date_to }}"
-                        class="form-control form-control-sm date_picker_to" required />
+                    <input type="text" name="date_to" id="edit_to_date"
+                        value="{{ $leaveApplication->date_to ? datepicker_format($leaveApplication->date_to) : '' }}"
+                        class="form-control form-control-sm datepicker-here" required readonly />
                 </div>
             </div>
             <div class="form-group mb-3 row">
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">Number of Days</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="number_of_days" value="1" readonly id="number_of_days"
-                        class="form-control form-control-sm" required />
+                    <input type="text" name="number_of_days" value="{{ $leaveApplication->number_of_days }}" readonly
+                        id="edit_number_of_days" class="form-control form-control-sm" required />
 
                     <input type="text" name="leave_table_id"
                         value="{{ $leaveApplication?->employee?->leaveTable?->id }}" id="leave_table_id" hidden>
@@ -73,7 +75,7 @@
             <div class="mb-3 row">
                 <div class="col-lg-3"><label for="input4" class="form-label">Remarks</label></div>
                 <div class="col-lg-9">
-                    <textarea type="text" name="remarks" rows="5" class="form-control" id="input3" placeholder="Remarks">{{ old('remarks') }}</textarea>
+                    <textarea type="text" name="remarks" rows="5" class="form-control" id="input3" placeholder="Remarks">{{ $leaveApplication->remarks }}</textarea>
                 </div>
             </div>
             <div class="form-group mb-3 row leave_type_id_wrap">
@@ -82,10 +84,14 @@
                 <div class="col-lg-9">
                     <select class="form-select select2 form-control-sm select2" id="status" name="status" required
                         style="width: 100%">
-                        <option value="Pending">Pending</option>
-                        <option value="Canceled">Canceled</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
+                        <option value="Pending" {{ $leaveApplication->status == 'Pending' ? 'selected' : '' }}>Pending
+                        </option>
+                        <option value="Canceled" {{ $leaveApplication->status == 'Canceled' ? 'selected' : '' }}>
+                            Canceled</option>
+                        <option value="Approved" {{ $leaveApplication->status == 'Approved' ? 'selected' : '' }}>
+                            Approved</option>
+                        <option value="Rejected" {{ $leaveApplication->status == 'Rejected' ? 'selected' : '' }}>
+                            Rejected</option>
                     </select>
                 </div>
             </div>
@@ -99,7 +105,7 @@
                     <small>(i.e. Medical Leave Records)</small>
                 </div>
             </div>
-            <div class="form-group mb-3 row email_to_wrap">
+            {{-- <div class="form-group mb-3 row email_to_wrap">
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">Email To</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
@@ -111,7 +117,7 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
+            </div> --}}
         </div>
 
         <div class="form-group mb-3 col-lg-6">
@@ -122,7 +128,7 @@
                         <tbody>
                             <tr>
                                 <th>Join Date</th>
-                                <td>{{ format_date_tow($leaveApplication->employee?->joining_date) }}</td>
+                                <td>{{ format_date_two($leaveApplication->employee?->joining_date) }}</td>
                             </tr>
                             <tr>
                                 <th>Left Date</th>
@@ -177,8 +183,8 @@
                             @if ($leaveApplication->employee?->leaveApplication)
                                 @foreach ($leaveApplication?->employee?->leaveApplication as $leaveApp)
                                     <tr>
-                                        <td>{{ format_date_tow($leaveApp->date_from) }}</td>
-                                        <td>{{ format_date_tow($leaveApp->date_to) }}</td>
+                                        <td>{{ format_date_two($leaveApp->date_from) }}</td>
+                                        <td>{{ format_date_two($leaveApp->date_to) }}</td>
                                         <td>{{ $leaveApp->number_of_days }}</td>
                                         <td>{{ $leaveApp->leaveType?->title }}</td>
                                         <td>{{ $leaveApp->month_to_pay }}</td>
@@ -232,47 +238,42 @@
             </fieldset>
         </div>
 
-        <div class="modal-footer"><button type="submit" class="btn btn-primary">Submit</button></div>
+        <div class="modal-footer"><button type="submit" id="leaveUpdate" class="btn btn-primary">Submit</button>
+        </div>
     </div>
 </form>
 
-<script>
-    $(function() {
-        var defaultDateFrom = "{{ $leaveApplication->date_from }}";
-        var defaultDateTo = "{{ $leaveApplication->date_to }}";
 
-        var formattedDateFrom = moment(defaultDateFrom, 'YYYY-MM-DD');
-        var formattedDateTo = moment(defaultDateTo, 'YYYY-MM-DD');
-        $('.date_picker_from').daterangepicker({
+<script>
+    $(document).ready(function() {
+        $('.datepicker-here').daterangepicker({
             singleDatePicker: true,
             showDropdowns: true,
-            minYear: 1901,
-            maxYear: parseInt(moment().format('YYYY'), 10),
-            startDate: formattedDate,
+            minYear: 2020,
+            maxYear: moment().year(),
+            autoUpdateInput: false,
             locale: {
-                format: 'DD-MM-YYYY'
+                cancelLabel: 'Clear',
+                format: 'DD-MM-YYYY',
+                applyLabel: 'ok',
             }
         });
 
-        $('.date_picker_to').daterangepicker({
-            singleDatePicker: true,
-            showDropdowns: true,
-            minYear: 1901,
-            maxYear: parseInt(moment().format('YYYY'), 10),
-            startDate: formattedDate,
-            locale: {
-                format: 'DD-MM-YYYY'
-            }
+        $(".datepicker-here").on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD-MM-YYYY'));
+        });
+        $(".datepicker-here").on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
         });
     });
-
+</script>
+<script>
     $(document).ready(function() {
-
-        $('#month-picker').datepicker({
-            autoClose: true,
-            view: 'months',
-            minView: 'months',
-            dateFormat: 'm/yyyy'
+        $('.month').datepicker({
+            format: "mm/yyyy",
+            startView: "months",
+            minViewMode: "months",
+            autoclose: true
         });
     });
 </script>
@@ -290,35 +291,51 @@
 
 <script>
     $(document).ready(function() {
+
+        // Function to parse date from DD-MM-YYYY to JavaScript Date
         function parseDate(dateString) {
             const parts = dateString.split('-');
             return new Date(parts[2], parts[1] - 1, parts[0]); // year, month (0-indexed), day
         }
 
+        // Function to calculate the number of days between the 'from' and 'to' dates
         function calculateDays() {
-            const fromDate = $('#from_date').val();
-            const toDate = $('#to_date').val();
-
+            const fromDate = $('#edit_from_date').val();
+            const toDate = $('#edit_to_date').val();
             if (fromDate && toDate) {
                 const start = parseDate(fromDate);
                 const end = parseDate(toDate);
                 const timeDiff = end - start;
 
-                // Calculate days
+                // Calculate days difference
                 const dayCount = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Convert milliseconds to days
 
                 if (dayCount >= 0) {
-                    $('#number_of_days').val(dayCount + 1); // Add one day
+                    $('#edit_number_of_days').val(dayCount + 1); // Add one day
+                    $("#leaveUpdate").removeAttr('disabled', true);
                 } else {
-                    $('#number_of_days').val('');
-                    alert('End date must be after start date');
+                    $('#edit_number_of_days').val('');
+                    showToast('End date must be after start date', 'error', 2500)
+                    $("#leaveUpdate").attr('disabled', true);
                 }
             } else {
-                $('#number_of_days').val(''); // Clear if either date is empty
+                $('#edit_number_of_days').val(''); // Clear if either date is empty
             }
         }
 
-        // Event listeners for date input changes
-        $('#from_date, #to_date').on('change', calculateDays);
+        // Bind the date picker change events
+        $('#edit_from_date, #edit_to_date').on('change', calculateDays);
+
+        // Ensure the calculation happens on datepicker's date selection as well
+        $(".datepicker-here").on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD-MM-YYYY'));
+            calculateDays(); // Recalculate days after picking a date
+        });
+
+        $(".datepicker-here").on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+            calculateDays(); // Recalculate days after clearing the date
+        });
+
     });
 </script>

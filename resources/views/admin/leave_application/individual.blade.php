@@ -88,11 +88,11 @@
                                 <tbody>
                                     <tr>
                                         <td width="40%">Joining Date: </td>
-                                        <td width="60%">{{ format_date_tow($employee->joining_date) }}</td>
+                                        <td width="60%">{{ format_date_two($employee->join_date) }}</td>
                                     </tr>
                                     <tr>
                                         <td width="40%">Left Date: </td>
-                                        <td width="60%">{{ format_date_tow($employee->left_date) }}</td>
+                                        <td width="60%">{{ format_date_two($employee->left_date) }}</td>
                                     </tr>
                                     <tr>
                                         <td width="40%">Leave Table : </td>
@@ -100,7 +100,9 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <table id="" class="table table-hover table-responsive table-sm table-bordered">
+                        </div>
+                        <div class="card table-v2 table-responsive">
+                            <table id="" class="table table-hover  table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -150,14 +152,13 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                    @empty
+                                        <tr>
+                                            <td class="text-center" colspan="13">No Data Found
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
-                            @empty
-                                <tr>
-                                    <td class="text-center" colspan="13">No Data Found
-                                    </td>
-                                </tr>
-                                @endforelse
-
                             </table>
                         </div>
                     </div>

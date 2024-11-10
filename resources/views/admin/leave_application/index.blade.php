@@ -104,12 +104,14 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header mb-4">
+                        <div class="card table-v1 table-responsive">
+                            <div class="card-header ">
                                 <h5 class="card-title">Attendance List</h5>
                             </div>
 
-                            <table id="" class="table table-hover table-responsive table-sm table-bordered">
+                            <hr>
+
+                            <table id="" class="text-center table table-hover  table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -213,10 +215,6 @@
     </div>
 
     @push('js')
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');

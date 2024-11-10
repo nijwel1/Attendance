@@ -42,6 +42,28 @@ if ( !function_exists( 'yearsAfter' ) ) {
 
 }
 
+if ( !function_exists( 'employeePresent' ) ) {
+    function employeePresent() {
+
+        if ( !function_exists( 'authEmployeeId' ) ) {
+            return false;
+        }
+
+        $employeeId = authEmployeeId();
+
+        if ( !$employeeId ) {
+            return false;
+        }
+
+        $present = DB::table( 'employee_attendances' )
+            ->where( 'employee_id', $employeeId )
+            ->where( 'date', date( 'Y-m-d' ) )
+            ->exists();
+
+        return $present;
+    }
+}
+
 if ( !function_exists( 'attendanceAddonVersion' ) ) {
     function attendanceAddonVersion() {
 

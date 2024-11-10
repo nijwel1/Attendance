@@ -26,7 +26,7 @@
                             <div class="row">
                                 <div class=" mb-3 col-lg-4">
                                     <div class="form-group">
-                                        <select class="form-select select2 form-control-sm" id="employee_id" type="text"
+                                        <select class="form-select form-control-sm" id="employee_id" type="text"
                                             name="employee_id">
                                             <option value="">All Employee</option>
                                             @foreach ($departments as $department)
@@ -77,12 +77,12 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card">
+                        <div class="card table-v1 table-responsive">
                             <div class="card-header mb-4">
                                 <h5 class="card-title">Attendance List</h5>
                             </div>
 
-                            <table id="" class="table table-hover table-responsive table-sm table-bordered">
+                            <table id="" class="table table-hover table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>#ID</th>
@@ -91,8 +91,8 @@
                                         <th>Day</th>
                                         <th>Time In</th>
                                         <th>Time Out</th>
-                                        <th>Break Time Out</th>
-                                        <th>Break Time In</th>
+                                        {{-- <th>Break Time Out</th>
+                                        <th>Break Time In</th> --}}
                                         <th>Working Hours</th>
                                         <th>Normal Hours</th>
                                         <th>Overtime Hours</th>
@@ -105,26 +105,46 @@
                                     @forelse ($attendanceData as $key => $attendance)
                                         <tr>
                                             <td width="5%">{{ $key + 1 }}</td>
-                                            <td>{{ $attendance['employee_name'] }}</td>
-                                            <td width="15%">{{ format_date($attendance['date']) }}</td>
-                                            <td width="10%">{{ $attendance ? $attendance['day'] : '-' }}</td>
-                                            <td width="10%">{{ $attendance['in_time'] ? $attendance['in_time'] : '-' }}
-                                            </td>
+                                            <td width="10%">{{ $attendance['employee_name'] }}</td>
+                                            <td width="10%">{{ format_date($attendance['date']) }}</td>
                                             <td width="10%">
+                                                {{ $attendance ? $attendance['day'] : '-' }}
+                                                {!! $attendance && $attendance['working_day'] === 'non_working_day'
+                                                    ? '<br><span style="color: rgb(253, 5, 5)">( On Weekend )</span>'
+                                                    : '' !!}
+                                            </td>
+                                            <td width="7%">{{ $attendance['in_time'] ? $attendance['in_time'] : '-' }}
+                                            </td>
+                                            <td width="7%">
                                                 {{ $attendance['out_time'] ? $attendance['out_time'] : '-' }}
                                             </td>
-                                            <td width="10%">
+                                            {{-- <td width="10%">
                                                 {{ $attendance['break_start_time'] ? $attendance['break_start_time'] : '-' }}
                                             </td>
                                             <td width="10%">
                                                 {{ $attendance['break_end_time'] ? $attendance['break_end_time'] : '-' }}
+                                            </td> --}}
+                                            <td width="7%">
+                                                <span
+                                                    class="{{ workingTimeFormatted($attendance['working_time']) < $attendance['working_hours'] ? 'text-primary' : (workingTimeFormatted($attendance['working_time']) > $attendance['working_hours'] ? 'text-danger' : '') }}">
+                                                    {{ $formattedHours = $attendance['working_hours'] ? formatTime($attendance['working_hours']) : '-' }}
+                                                </span>
                                             </td>
-                                            <td width="10%">
-                                                {{ $attendance['working_hours'] ? formatTime($attendance['working_hours']) : '-' }}
+                                            <td width="13%">
+                                                {!! $attendance['working_time_from'] && $attendance['working_time_to']
+                                                    ? ($attendance['normal_hours']
+                                                        ? formatTime($attendance['normal_hours']) .
+                                                            ' <br> (' .
+                                                            date('h:i A', strtotime($attendance['working_time_from'])) .
+                                                            '-' .
+                                                            date('h:i A', strtotime($attendance['working_time_to'])) .
+                                                            ')'
+                                                        : '-')
+                                                    : ($attendance['normal_hours']
+                                                        ? formatTime($attendance['normal_hours']) . ' <br> <span style="color: rgb(14, 74, 102)">( On Weekend )</span>'
+                                                        : ' <span style="color: rgb(255, 0, 0)">( On Weekend )</span>') !!}
                                             </td>
-                                            <td width="10%">
-                                                {{ $attendance['normal_hours'] ? formatTime($attendance['normal_hours']) : '-' }}
-                                            </td>
+
                                             <td width="10%">
                                                 {{ $attendance['overtime_hours'] ? formatTime($attendance['overtime_hours']) : '-' }}
                                             </td>
@@ -134,9 +154,23 @@
                                                         <span class="badge rounded-pill text-bg-success">
                                                             Present
                                                             <span>
-                                                                @if ($attendance['in_time'] > '10:00am')
-                                                                    <span
-                                                                        class="badge rounded-pill text-bg-warning">Late</span>
+                                                                @php
+                                                                    $inTime = strtotime($attendance['in_time']);
+                                                                    $workingTimeFrom = strtotime(
+                                                                        $attendance['working_time_from'],
+                                                                    );
+                                                                @endphp
+
+                                                                @if ($attendance['working_day'] != 'non_working_day')
+                                                                    @if ($inTime > $workingTimeFrom)
+                                                                        <span
+                                                                            class="badge rounded-pill text-bg-warning">Late</span>
+                                                                    @endif
+                                                                @else
+                                                                    @if ($inTime < $workingTimeFrom)
+                                                                        <span class="badge rounded-pill text-bg-info">Early
+                                                                            (Non-Working Day)</span>
+                                                                    @endif
                                                                 @endif
                                                             </span>
                                                         </span>
@@ -156,7 +190,7 @@
                                                             data-bs-target="#editModal">
                                                             <i class="far fa-edit"></i>
                                                         </button>
-                                                        <form action="{{ route('department.destroy', $attendance['id']) }}"
+                                                        <form action="{{ route('attendance.delete', $attendance['id']) }}"
                                                             method="POST">
                                                             @csrf
                                                             @method('DELETE')
@@ -209,13 +243,13 @@
                                 <label class="mb-2 form--label text--white">Employee</label>
                                 <span class="text-danger">*</span>
                                 <div>
-                                    <select class="form-select select2 form-control-sm" id="att_employee"
-                                        name="employee_id" required style="width: 100%">
+                                    <select class="form-select form-control-sm" id="att_employee" name="employee_id"
+                                        required style="width: 100%">
                                         @foreach ($departments as $department)
                                             <optgroup label="{{ $department?->name }}">
                                                 @foreach ($department->employees as $employee)
                                                     <option value="{{ $employee->id }}"
-                                                        {{ request()->get('employee') == $employee->id ? 'selected' : '' }}>
+                                                        {{ $attendance['employee_id'] == $employee->id ? 'selected' : '' }}>
                                                         {{ $employee->name }}
                                                     </option>
                                                 @endforeach
@@ -252,7 +286,7 @@
                                 </div>
                             </div>
 
-                            <div class="datepair row">
+                            {{-- <div class="datepair row">
                                 <div class="form-group mb-3 col-lg-6">
                                     <label class="mb-2 form--label text--white">Break Time start</label>
                                     <div>
@@ -269,7 +303,7 @@
                                         class="input time end ui-timepicker-input form-control form-control-sm"
                                         autocomplete="off" />
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <div class="mb-3">
                                 <label for="input4" class="form-label">Remarks</label>
@@ -358,10 +392,9 @@
                 var id = $(this).val();
                 var date = $("#from_date").val();
 
-                // Convert date from MM/DD/YYYY to YYYY/MM/DD
                 var dateParts = date.split('/');
                 if (dateParts.length === 3) {
-                    date = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0]; // YYYY/MM/DD
+                    date = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
                 }
                 $.ajax({
                     url: "{{ url('admin/leave-application/create') }}",
@@ -391,15 +424,15 @@
 
         <script type="text/javascript">
             $(function() {
-                // Get start and end dates from request parameters and handle them safely
+
                 var start = '{{ $startDate ?? now()->startOfMonth()->format('Y-m-d') }}';
                 var end = '{{ $endDate ?? now()->endOfMonth()->format('Y-m-d') }}';
 
-                // Convert to moment objects
+
                 var startDate = moment(start, 'YYYY-MM-DD');
                 var endDate = moment(end, 'YYYY-MM-DD');
 
-                // Function to update the displayed text
+
                 function cb(start, end) {
                     $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 }
@@ -439,17 +472,6 @@
         </script>
 
         <script>
-            $(document).ready(function() {
-                $("#att_employee").select2({
-                    dropdownParent: $('#attendanceModal'),
-                    tags: true,
-                    tokenSeparators: [','],
-                    width: '100%'
-                });
-            });
-        </script>
-
-        <script>
             $(function() {
                 // Get the initial date range from the input field
                 var initialStartDate = $('input[name="start_date"]').val();
@@ -458,24 +480,51 @@
                 $('input[name="date"]').daterangepicker({
                     startDate: moment(initialStartDate, 'DD/MM/YYYY'),
                     endDate: moment(initialEndDate, 'DD/MM/YYYY'),
-                    singleDatePicker: false, // Change to true if you want a single date
+                    singleDatePicker: false,
                     showDropdowns: true,
                     minYear: 1901,
                     maxYear: parseInt(moment().format('YYYY'), 10),
                     locale: {
-                        format: 'DD/MM/YYYY' // Change this to your desired format
+                        format: 'DD/MM/YYYY'
                     }
                 }, function(start, end) {
-                    // Update the input field with the selected date range
                     $('input[name="date"]').val(start.format('DD/MM/YYYY') + ' - ' + end.format('DD/MM/YYYY'));
                 });
             });
         </script>
 
+        <script>
+            $(document).ready(function() {
+                $("#att_employee").select2({
+                    dropdownParent: $('#attendanceModal'),
+                    tags: true,
+                    tokenSeparators: [','],
+                    width: '100%'
+                });
+
+                $("#employee_id").select2();
+            });
+        </script>
+
+        <script>
+            $(function() {
+                $('#date').daterangepicker({
+                    singleDatePicker: true,
+                    showDropdowns: true,
+                    minYear: 1901,
+                    maxYear: parseInt(moment().format('YYYY'), 10),
+                    startDate: moment(), // Set the default to today
+                    locale: {
+                        format: 'DD-MM-YYYY'
+                    }
+                });
+            });
+        </script>
+
+
 
         <script>
             $(document).ready(function(e) {
-                // initialize input widgets first
                 $(".time").timepicker({
                     showDuration: true,
                     timeFormat: "g:ia",
@@ -486,7 +535,7 @@
 
             $(document).ready(function() {
                 $('#searchForm').on('change', function() {
-                    $('#searchForm').submit(); // Submit the form
+                    $('#searchForm').submit();
                 });
             });
         </script>

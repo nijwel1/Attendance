@@ -76,21 +76,6 @@
                                             value="{{ request()->get('end_date', endDateOfMonth()) }}" id="end_date">
                                     </div>
                                 </div>
-                                {{-- <div class=" mb-3 col-lg-1">
-                                    <div class="form-group ms-1">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                            <i class="fa fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class=" mb-3 col-lg-2">
-                                    <div class="form-group ms-1">
-                                        <a href="{{ route('employee.index') }}" class="btn btn-sm btn-outline-primary">
-                                            Clear
-                                        </a>
-                                    </div>
-                                </div> --}}
                             </div>
                         </form>
                     </div>
@@ -117,12 +102,13 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header mb-4">
+                        <div class="card table-v1 table-responsive">
+                            <div class="card-header">
                                 <h5 class="card-title">Attendance List</h5>
                             </div>
+                            <hr>
 
-                            <table id="" class="table table-hover table-responsive table-sm table-bordered">
+                            <table id="" class="table text-center table-hover  table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>#ID</th>
@@ -131,8 +117,8 @@
                                         <th>Day</th>
                                         <th>Time In</th>
                                         <th>Time Out</th>
-                                        <th>Break Time Out</th>
-                                        <th>Break Time In</th>
+                                        {{-- <th>Break Time Out</th>
+                                        <th>Break Time In</th> --}}
                                         <th>Working Hours</th>
                                         <th>Normal Hours</th>
                                         <th>Overtime Hours</th>
@@ -148,13 +134,15 @@
                                             <td>{{ $attendance->employee->name }}</td>
                                             <td width="15%">{{ normal_format_date($attendance->date) }}</td>
                                             <td width="10%">{{ $attendance ? $attendance->day : '-' }}</td>
-                                            <td width="10%">{{ $attendance ? $attendance->in_time : '-' }}</td>
-                                            <td width="10%">{{ $attendance ? $attendance->out_time : '-' }}</td>
-                                            <td width="10%">
+                                            <td width="10%" style="background: #3c965417;">
+                                                {{ $attendance ? $attendance->in_time : '-' }}</td>
+                                            <td width="10%" style="background: #963c3c17;">
+                                                {{ $attendance ? $attendance->out_time : '-' }}</td>
+                                            {{-- <td width="10%">
                                                 {{ $attendance->break_start_time ? $attendance->break_start_time : '-' }}
                                             </td>
                                             <td width="10%">
-                                                {{ $attendance->break_end_time ? $attendance->break_end_time : '-' }}</td>
+                                                {{ $attendance->break_end_time ? $attendance->break_end_time : '-' }}</td> --}}
                                             <td width="10%">
                                                 {{ $attendance->working_hours ? formatTime($attendance->working_hours) : '-' }}
                                             </td>
@@ -166,7 +154,7 @@
                                             </td>
                                             <td width="10%">
                                                 @if ($attendance->status == 'present')
-                                                    <span class="badge rounded-pill text-bg-success">
+                                                    <span class="mx-auto badge rounded-pill text-bg-success">
                                                         Present
                                                         @if (date('H:i', strtotime($attendance->in_time)) > '10:00')
                                                             <span class="badge rounded-pill text-bg-warning">Late</span>
@@ -178,7 +166,7 @@
                                             </td>
 
                                             <td width="10%">
-                                                <div class="d-flex gap-1">
+                                                <div class="d-flex gap-1 justify-content-center">
                                                     <button class="btn btn-outline-base btn-sm edit"
                                                         data-id="{{ $attendance->id }}" data-bs-toggle="modal"
                                                         data-bs-target="#editModal">
@@ -270,7 +258,7 @@
                                 </div>
                             </div>
 
-                            <div class="datepair row">
+                            {{-- <div class="datepair row">
                                 <div class="form-group mb-3 col-lg-6">
                                     <label class="mb-2 form--label text--white">Break Time start</label>
                                     <div>
@@ -287,7 +275,7 @@
                                         class="input time end ui-timepicker-input form-control form-control-sm"
                                         autocomplete="off" />
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <div class="mb-3">
                                 <label for="input4" class="form-label">Remarks</label>
@@ -321,14 +309,10 @@
             </div>
         </div>
         <!-- / Modal -->
-        
+
     </div>
 
     @push('js')
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
@@ -340,50 +324,31 @@
         </script>
 
         <script>
-            // Handle Change Password Modal
-            $(document).on('click', '.changePassword', function() {
-                let employee_id = $(this).data('employee_id');
-
-                // Update the form action with the employee_id for Change Password
-                let passwordFormAction = "{{ route('employee.change.password', ':id') }}";
-                passwordFormAction = passwordFormAction.replace(':id', employee_id);
-                $('#changePasswordModal form').attr('action', passwordFormAction);
-            });
-
-            // Handle Change Password Modal
-            $(document).on('click', '.changeEmail', function() {
-                let employee_id = $(this).data('employee_id');
-                let oldEmail = $(this).data('email');
-
-                // Populate old email in the modal
-                $('#oldEmail').val(oldEmail);
-
-                // Update the form action with the correct route and employee ID
-                let emailFormAction = "{{ route('employee.change.email', ':id') }}";
-                emailFormAction = emailFormAction.replace(':id', employee_id);
-                $('#changeEmailModal form').attr('action', emailFormAction);
-            });
-
             $(document).ready(function() {
-                $('#department').on('change', function() {
-                    $('#searchForm').submit(); // Submit the form
+                $('#searchForm').on('change', function() {
+                    $('#searchForm').submit();
                 });
             });
         </script>
 
         <script type="text/javascript">
             $(function() {
-                // Set default start and end dates to this month
-                var start = moment().startOf('month');
-                var end = moment().endOf('month');
+                // Get start and end dates from request parameters and handle them safely
+                var start = '{{ $startDate ?? now()->startOfMonth()->format('Y-m-d') }}';
+                var end = '{{ $endDate ?? now()->endOfMonth()->format('Y-m-d') }}';
 
+                // Convert to moment objects
+                var startDate = moment(start, 'YYYY-MM-DD');
+                var endDate = moment(end, 'YYYY-MM-DD');
+
+                // Function to update the displayed text
                 function cb(start, end) {
                     $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 }
 
                 $('#reportrange').daterangepicker({
-                    startDate: start,
-                    endDate: end,
+                    startDate: startDate,
+                    endDate: endDate,
                     ranges: {
                         'Today': [moment(), moment()],
                         'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -391,22 +356,54 @@
                         'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                         'This Month': [moment().startOf('month'), moment().endOf('month')],
                         'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1,
-                            'month').endOf('month')]
+                            'month').endOf('month')],
+                        'This Year': [moment().startOf('year'), moment().endOf('year')],
+                        'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year')
+                            .endOf('year')
+                        ]
                     }
                 }, cb);
 
-                cb(start, end); // Call the callback function to set the initial text
+                cb(startDate, endDate);
             });
 
 
             $("#reportrange").on('apply.daterangepicker', function(ev, picker) {
 
+                var start = picker.startDate.format('YYYY/MM/DD');
+                var end = picker.endDate.format('YYYY/MM/DD');
+                $("#start_date").val(start);
+                $("#end_date").val(end);
+
+                $('#searchForm').submit();
             });
 
             $(document).ready(function() {
                 $(".from-select2").select2();
             });
         </script>
+
+        {{-- <script>
+            $(function() {
+                // Get the initial date range from the input field
+                var initialStartDate = $('input[name="start_date"]').val();
+                var initialEndDate = $('input[name="end_date"]').val();
+
+                $('input[name="date"]').daterangepicker({
+                    startDate: moment(initialStartDate, 'DD/MM/YYYY'),
+                    endDate: moment(initialEndDate, 'DD/MM/YYYY'),
+                    singleDatePicker: false,
+                    showDropdowns: true,
+                    minYear: 1901,
+                    maxYear: parseInt(moment().format('YYYY'), 10),
+                    locale: {
+                        format: 'DD/MM/YYYY'
+                    }
+                }, function(start, end) {
+                    $('input[name="date"]').val(start.format('DD/MM/YYYY') + ' - ' + end.format('DD/MM/YYYY'));
+                });
+            });
+        </script> --}}
 
         <script>
             $(function() {
@@ -415,8 +412,9 @@
                     showDropdowns: true,
                     minYear: 1901,
                     maxYear: parseInt(moment().format('YYYY'), 10),
+                    startDate: moment(),
                     locale: {
-                        format: 'YYYY-MM-DD' // Change this to your desired format
+                        format: 'DD-MM-YYYY'
                     }
                 });
             });
@@ -431,12 +429,6 @@
                     step: 15,
                 });
                 $(".datepair").datepair();
-            });
-
-            $(document).ready(function() {
-                $('#searchForm').on('change', function() {
-                    $('#searchForm').submit(); // Submit the form
-                });
             });
         </script>
     @endpush

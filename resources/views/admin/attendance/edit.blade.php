@@ -22,7 +22,7 @@
         <label class="mb-2 form--label text--white">Date</label>
         <span class="text-danger">*</span>
         <div>
-            <input type="text" name="date" id="edit_date" value="{{ $data->date }}"
+            <input type="text" name="date" id="edit_date" value="{{ datepicker_format($data->date) }}"
                 class="form-control form-control-sm" required />
         </div>
     </div>
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <div class="datepair row">
+    {{-- <div class="datepair row">
         <div class="form-group mb-3 col-lg-6">
             <label class="mb-2 form--label text--white">Break Time start</label>
             <div>
@@ -62,7 +62,7 @@
             <input type="text" name="break_end_time" value="{{ $data->break_end_time }}" id="break_end_time"
                 class="input time end ui-timepicker-input form-control form-control-sm" autocomplete="off" />
         </div>
-    </div>
+    </div> --}}
 
     <div class="mb-3">
         <label for="input4" class="form-label">Remarks</label>
@@ -83,11 +83,8 @@
             minYear: 1901,
             maxYear: parseInt(moment().format('YYYY'), 10),
             locale: {
-                format: 'YYYY-MM-DD' // Change this to your desired format
+                format: 'DD-MM-YYYY' // Change this to your desired format
             }
-        }, function(start, end, label) {
-            var years = moment().diff(start, 'years');
-            alert("You are " + years + " years old!");
         });
     });
 </script>

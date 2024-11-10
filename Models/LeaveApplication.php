@@ -3,6 +3,7 @@
 namespace Addons\Attendance\Models;
 
 use Addons\Employee\Models\Employee;
+use Addons\Employee\Models\LeaveTable;
 use Addons\Employee\Models\LeaveType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,9 @@ class LeaveApplication extends Model {
 
     public function employee() {
         return $this->belongsTo( Employee::class );
+    }
+    public function leave_table() {
+        return $this->belongsTo( LeaveTable::class )->with('leaveTableDetails');
     }
 
 }

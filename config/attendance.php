@@ -1,6 +1,6 @@
 <?php
 
-return [
-    'enabled'  => true,
-    'position' => 2,
-];
+return array (
+  'enabled' => true,
+  'position' => 2,
+);

@@ -16,9 +16,10 @@ return new class extends Migration {
             $table->unsignedBigInteger( 'leave_type_id' );
             $table->unsignedBigInteger( 'leave_table_id' );
             $table->string( 'month_to_pay' )->nullable();
-            $table->string( 'date_from' );
-            $table->string( 'date_to' );
+            $table->date( 'date_from' );
+            $table->date( 'date_to' );
             $table->integer( 'number_of_days' );
+            $table->integer( 'balance' );
             $table->text( 'remarks' )->nullable();
             $table->string( 'status' )->nullable();
             $table->string( 'email_to' )->nullable();

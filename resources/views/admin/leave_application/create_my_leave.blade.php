@@ -5,26 +5,11 @@
             <div class="form-group mb-3 alert alert-danger col-lg-10">
                 <p>Your balance is: 0</p>
             </div>
-
+            <input type="hidden" name="employee_id" value="{{ authEmployeeId() }}" hidden>
             <div class="form-group mb-3 row">
-                <div class="col-lg-3"><label class="mb-2 form--label text--white">Employee</label><span
-                        class="text-danger">*</span></div>
-                <div class="col-lg-9"><select class="form-select select2 form-control-sm employee_id"
-                        id="leave_employee" name="employee_id" required style="width: 100%">
-                        @foreach ($departments as $department)
-                            <optgroup label="{{ $department?->name }}">
-                                @foreach ($department->employees as $row)
-                                    <option value="{{ $row->id }}"
-                                        {{ $employee->id == $row->id ? 'selected' : '' }}>{{ $row->name }} </option>
-                                @endforeach
-                        @endforeach
-                    </select>
+                <div class="col-lg-3">
+                    <label class="mb-2 form--label text--white">Month To Pay</label><span class="text-danger">*</span>
                 </div>
-            </div>
-
-            <div class="form-group mb-3 row">
-                <div class="col-lg-3"><label class="mb-2 form--label text--white">Month To Pay</label><span
-                        class="text-danger">*</span></div>
                 <div class="col-lg-9">
                     <input data-language="en" type="text" value="{{ date('m/Y') }}" name="month_to_pay"
                         id="month-picker" class="form-control form-control-sm month" required readonly />
@@ -34,7 +19,7 @@
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">From</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="date_from" id="from_date" value="{{ $dateFrom ?? date('d-m-Y') }}"
+                    <input type="text" name="date_from" id="my_from_date" value="{{ $dateFrom ?? date('d-m-Y') }}"
                         class="form-control form-control-sm datepicker-here" required readonly />
                 </div>
             </div>
@@ -42,7 +27,7 @@
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">To</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="date_to" id="to_date" value="{{ $dateFrom ?? date('d-m-Y') }}"
+                    <input type="text" name="date_to" id="my_to_date" value="{{ $dateFrom ?? date('d-m-Y') }}"
                         class="form-control form-control-sm datepicker-here" required readonly />
                 </div>
             </div>
@@ -50,7 +35,7 @@
                 <div class="col-lg-3"><label class="mb-2 form--label text--white">Number of Days</label><span
                         class="text-danger">*</span></div>
                 <div class="col-lg-9">
-                    <input type="text" name="number_of_days" value="1" readonly id="number_of_days"
+                    <input type="text" name="number_of_days" value="1" readonly id="my_number_of_days"
                         class="form-control form-control-sm" required />
 
                     <input type="text" name="leave_table_id" value="{{ $employee->leaveTable?->id }}"
@@ -262,7 +247,7 @@
 <script>
     $(document).ready(function() {
         $("#leave_employee , #leave_type_id , #status ,#email_to").select2({
-            dropdownParent: $('#leaveApplicationModal'),
+            dropdownParent: $('#myLeaveApplicationModal'),
             tags: true,
             tokenSeparators: [','],
             width: '100%'
@@ -278,8 +263,8 @@
         }
 
         function calculateDays() {
-            const fromDate = $('#from_date').val();
-            const toDate = $('#to_date').val();
+            const fromDate = $('#my_from_date').val();
+            const toDate = $('#my_to_date').val();
 
             if (fromDate && toDate) {
                 const start = parseDate(fromDate);
@@ -290,20 +275,20 @@
                 const dayCount = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Convert milliseconds to days
 
                 if (dayCount >= 0) {
-                    $('#number_of_days').val(dayCount + 1); // Add one day
+                    $('#my_number_of_days').val(dayCount + 1); // Add one day
                     $("#leaveSubmit").removeAttr('disabled', true);
                 } else {
-                    $('#number_of_days').val('');
+                    $('#my_number_of_days').val('');
                     showToast('End date must be after start date', 'error', 2500)
                     $("#leaveSubmit").attr('disabled', true);
                 }
             } else {
-                $('#number_of_days').val(''); // Clear if either date is empty
+                $('#my_number_of_days').val(''); // Clear if either date is empty
             }
         }
 
         // Event listeners for date input changes
-        $('#from_date, #to_date').on('change', calculateDays);
+        $('#my_from_date, #my_to_date').on('change', calculateDays);
     });
 
     $(document).ready(function() {
