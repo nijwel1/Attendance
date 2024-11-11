@@ -402,13 +402,15 @@ class EmployeeAttendanceController extends Controller {
 
             if ( !$attendance ) {
 
-                $attendance              = new EmployeeAttendance();
-                $attendance->employee_id = authEmployeeId();
-                $attendance->date        = datepicker_format_reverse( now() );
-                $attendance->day         = dayName( now() );
-                $attendance->in_time     = format_date_only_time( $currentTime );
-                $attendance->status      = 'present';
-                $attendance->auth_id     = auth()->user()->id;
+                $attendance                    = new EmployeeAttendance();
+                $attendance->employee_id       = authEmployeeId();
+                $attendance->date              = datepicker_format_reverse( now() );
+                $attendance->day               = dayName( now() );
+                $attendance->in_time           = format_date_only_time( $currentTime );
+                $attendance->status            = 'present';
+                $attendance->auth_id           = auth()->user()->id;
+                $attendance->checkin_latitude  = employeLocation( request()->ip )->latitude;
+                $attendance->checkin_longitude = employeLocation( request()->ip )->longitude;
                 $attendance->save();
                 $message = 'Check In successfully.';
             } else {
@@ -416,11 +418,13 @@ class EmployeeAttendanceController extends Controller {
                     return redirect()->back()->with( 'error', 'You have already checked out for ' . format_date( $request->date ) );
                 }
 
-                $attendance->out_time       = format_date_only_time( $currentTime );
-                $attendance->working_hours  = workingHours( $attendance->in_time, $attendance->out_time, $attendance->break_start_time, $attendance->break_end_time );
-                $attendance->normal_hours   = normalHours( $attendance->working_hours, $normalWorkingHours );
-                $attendance->overtime_hours = overtimeHours( $attendance->working_hours, $normalWorkingHours );
-                $attendance->break_hours    = breakHours( $attendance->break_start_time, $attendance->break_end_time );
+                $attendance->out_time           = format_date_only_time( $currentTime );
+                $attendance->working_hours      = workingHours( $attendance->in_time, $attendance->out_time, $attendance->break_start_time, $attendance->break_end_time );
+                $attendance->normal_hours       = normalHours( $attendance->working_hours, $normalWorkingHours );
+                $attendance->overtime_hours     = overtimeHours( $attendance->working_hours, $normalWorkingHours );
+                $attendance->break_hours        = breakHours( $attendance->break_start_time, $attendance->break_end_time );
+                $attendance->checkout_latitude  = employeLocation( request()->ip )->latitude;
+                $attendance->checkout_longitude = employeLocation( request()->ip )->longitude;
                 $attendance->save();
                 $message = 'Check Out successfully.';
             }

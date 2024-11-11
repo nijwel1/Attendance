@@ -316,7 +316,7 @@
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
-                $.get("{{ url('admin/employee-attendance/edit') }}/" + id,
+                $.get("{{ url('admin/attendance/edit') }}/" + id,
                     function(data) {
                         $('#edit_section').html(data);
                     })

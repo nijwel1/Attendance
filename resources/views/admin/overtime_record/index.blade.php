@@ -60,8 +60,7 @@
                                         <i class="fa fa-calendar-alt"></i>&nbsp;
                                         <span></span> <i class="fa fa-caret-down"></i>
                                         <input type="hidden" name="start_date"
-                                            value="{{ request()->get('start_date', startDateOfMonth()) }}"
-                                            id="start_date">
+                                            value="{{ request()->get('start_date', startDateOfMonth()) }}" id="start_date">
                                         <input type="hidden" name="end_date"
                                             value="{{ request()->get('end_date', endDateOfMonth()) }}" id="end_date">
                                     </div>
@@ -190,7 +189,8 @@
                                                     class="form-control overtime_format" required>
                                                     <option value="" selected disabled>Select OT Pay</option>
                                                     @foreach ($overtime_formats as $format)
-                                                        <option value="{{ $format->id }}" {{ old('ot_format') == $format->id ? 'selected' : '' }}>
+                                                        <option value="{{ $format->id }}"
+                                                            {{ old('ot_format') == $format->id ? 'selected' : '' }}>
                                                             {{ $format->format }}</option>
                                                     @endforeach
                                                 </select>

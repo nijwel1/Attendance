@@ -24,7 +24,11 @@ return new class extends Migration {
             $table->string( 'normal_hours' )->nullable();
             $table->string( 'overtime_hours' )->nullable();
             $table->enum( 'status', ['present', 'absent', 'late', 'early'] )->nullable();
-            $table->string( 'remarks' )->nullable();
+            $table->text( 'remarks' )->nullable();
+            $table->string( 'checkin_latitude' )->nullable();
+            $table->string( 'checkin_longitude' )->nullable();
+            $table->string( 'checkout_latitude' )->nullable();
+            $table->string( 'checkout_longitude' )->nullable();
             $table->timestamps();
         } );
     }

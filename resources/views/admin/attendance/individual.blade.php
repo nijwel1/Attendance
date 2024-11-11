@@ -169,7 +169,7 @@
                                                                 @else
                                                                     @if ($inTime < $workingTimeFrom)
                                                                         <span class="badge rounded-pill text-bg-info">Early
-                                                                            (Non-Working Day)</span>
+                                                                        </span>
                                                                     @endif
                                                                 @endif
                                                             </span>
@@ -361,7 +361,7 @@
         <script>
             $('body').on('click', '.edit', function() {
                 var id = $(this).data('id');
-                $.get("{{ url('admin/employee-attendance/edit') }}/" + id,
+                $.get("{{ url('admin/attendance/edit') }}/" + id,
                     function(data) {
                         $('#edit_section').html(data);
                     })

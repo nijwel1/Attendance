@@ -4,6 +4,7 @@ use Addons\Attendance\Controllers\Admin\AttendanceAddonUpdateController;
 use Addons\Attendance\Controllers\Admin\EmployeeAttendanceController;
 use Addons\Attendance\Controllers\Admin\EmployeeOvertimeController;
 use Addons\Attendance\Controllers\Admin\LeaveApplicationController;
+use Addons\Attendance\Controllers\Admin\LeaveEncashmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get( '/auth-check', function () {
@@ -43,6 +44,17 @@ Route::middleware( ['web', 'auth'] )->group( function () {
         } );
 
         Route::get( 'my-leave-application/create', [LeaveApplicationController::class, 'myLeaveApplication'] )->name( 'leave_application.create' );
+
+        // ------ Leave Encashment -----
+        Route::prefix( 'leave-encashment' )->group( function () {
+            Route::get( '/', [LeaveEncashmentController::class, 'index'] )->name( 'leave.encashment.index' );
+            Route::post( '/store', [LeaveEncashmentController::class, 'store'] )->name( 'leave.encashment.store' );
+            Route::get( '/create', [LeaveEncashmentController::class, 'create'] )->name( 'leave.encashment.create' );
+            Route::get( '/edit/{id}', [LeaveEncashmentController::class, 'edit'] )->name( 'leave.encashment.edit' );
+            Route::post( '/update/{id}', [LeaveEncashmentController::class, 'update'] )->name( 'leave.encashment.update' );
+            Route::delete( '/delete/{id}', [LeaveEncashmentController::class, 'destroy'] )->name( 'leave.encashment.destroy' );
+            Route::delete( 'all/delete', [LeaveEncashmentController::class, 'deleteAll'] )->name( 'leave.encashment.delete.all' );
+        } );
 
         // ------ Employee overtime -----
         Route::prefix( 'employee-overtime' )->group( function () {
